@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Administración{% endblock %}
+{% block content %}
+<h2>Administración de usuarios</h2>
+
+<div class="row mb-3">
+  <div class="col-md-4">
+    <input type="text" id="buscador" class="form-control" placeholder="Buscar por nombre o correo...">
+  </div>
+</div>
+
+<div class="table-responsive">
+  <table class="table table-hover align-middle">
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Correo</th>
+        <th>Rol</th>
+        <th>Activo</th>
+        <th>Creado</th>
+        <th>Último acceso</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody id="tabla-usuarios"></tbody>
+  </table>
+</div>
+
+<script>
+async function cargarUsuarios(q = "") {
+  const res = await fetch(`/api/usuarios?q=${encodeURIComponent(q)}`);
+  const usuarios = await res.json();
+  const tbody = document.getElementById("tabla-usuarios");
+  tbody.innerHTML = "";
+  usuarios.forEach(u => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${u.nombre} ${u.apellido}</td>
+      <td>${u.correo}</td>
+      <td>
+        <select class="form-select form-select-sm" onchange="cambiarRol(${u.id}, this.value)">
+          <option value="usuario" ${u.rol === 'usuario' ? 'selected' : ''}>Usuario</option>
+          <option value="administrador" ${u.rol === 'administrador' ? 'selected' : ''}>Administrador</option>
+        </select>
+      </td>
+      <td>${u.activo ? '<span class="badge bg-success">Sí</span>' : '<span class="badge bg-secondary">No</span>'}</td>
+      <td>${u.fecha_creacion || '-'}</td>
+      <td>${u.ultimo_login || '-'}</td>
+      <td>
+        <button class="btn btn-sm btn-outline-danger" onclick="eliminarUsuario(${u.id})">
+          <i class="bi bi-trash"></i>
+        </button>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+async function cambiarRol(id, rol) {
+  await fetch(`/api/usuarios/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ rol })
+  });
+}
+
+async function eliminarUsuario(id) {
+  if (!confirm("¿Confirmás que querés eliminar este usuario? Esta acción no se puede deshacer.")) return;
+  const res = await fetch(`/api/usuarios/${id}`, { method: "DELETE" });
+  const data = await res.json();
+  if (!data.ok) { alert(data.error || "No se pudo eliminar el usuario."); return; }
+  cargarUsuarios(document.getElementById("buscador").value);
+}
+
+document.getElementById("buscador").addEventListener("input", (e) => cargarUsuarios(e.target.value));
+cargarUsuarios();
+</script>
+{% endblock %}

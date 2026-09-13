@@ -1,0 +1,120 @@
+﻿{% extends "base.html" %}
+
+{% block title %}Ajustes{% endblock %}
+
+{% block content %}
+<h2 data-i18n="ajustes_titulo">Ajustes</h2>
+<p class="text-muted mb-4" data-i18n="ajustes_subtitulo">Personalizá la apariencia y preferencias del sistema.</p>
+
+<div class="row g-4">
+
+  <div class="col-lg-7">
+    <div class="card p-4 mb-4">
+      <h5 class="mb-3"><i class="bi bi-palette-fill icon-yellow me-2"></i><span data-i18n="ajustes_apariencia">Apariencia</span></h5>
+
+      <div class="mb-3">
+        <label class="form-label" data-i18n="ajustes_tema">Tema</label>
+        <select class="form-select" id="selectTema">
+          <option value="dark" data-i18n="ajustes_tema_oscuro">Modo oscuro</option>
+          <option value="light" data-i18n="ajustes_tema_claro">Modo claro</option>
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label" data-i18n="ajustes_idioma">Idioma</label>
+        <select class="form-select" id="selectIdioma">
+          <option value="es">Español</option>
+          <option value="en">English</option>
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label" data-i18n="ajustes_zona">Zona horaria</label>
+        <select class="form-select" id="selectZona">
+          <option value="America/Argentina/Buenos_Aires">America/Argentina/Buenos_Aires (GMT-3)</option>
+          <option value="UTC">UTC</option>
+        </select>
+      </div>
+
+      <button class="btn btn-centinela mt-2" id="btnGuardarAjustes">
+        <i class="bi bi-check-circle-fill me-1"></i> <span data-i18n="ajustes_guardar">Guardar cambios</span>
+      </button>
+      <span class="text-muted small ms-3 d-none" id="msgGuardado">
+        <i class="bi bi-check2 me-1"></i><span data-i18n="ajustes_guardado">Guardado</span>
+      </span>
+    </div>
+
+    <div class="card p-4">
+      <h5 class="mb-3"><i class="bi bi-bell-fill icon-red me-2"></i><span data-i18n="ajustes_notif">Notificaciones</span></h5>
+
+      <div class="form-check form-switch mb-2">
+        <input class="form-check-input" type="checkbox" id="notifMovimiento" checked>
+        <label class="form-check-label" for="notifMovimiento" data-i18n="ajustes_notif_mov">Alertas de movimiento detectado</label>
+      </div>
+      <div class="form-check form-switch mb-2">
+        <input class="form-check-input" type="checkbox" id="notifDesconexion" checked>
+        <label class="form-check-label" for="notifDesconexion" data-i18n="ajustes_notif_desc">Alertas de cámara desconectada</label>
+      </div>
+      <div class="form-check form-switch">
+        <input class="form-check-input" type="checkbox" id="notifEmail">
+        <label class="form-check-label" for="notifEmail" data-i18n="ajustes_notif_mail">Recibir resumen diario por correo</label>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-5">
+    <div class="card p-4">
+      <h5 class="mb-3"><i class="bi bi-info-circle-fill icon-blue me-2"></i><span data-i18n="ajustes_estado">Estado del sistema</span></h5>
+      <dl class="row mb-0">
+        <dt class="col-6" data-i18n="ajustes_zona_actual">Zona horaria actual</dt>
+        <dd class="col-6 text-end" id="infoZona">-</dd>
+
+        <dt class="col-6" data-i18n="ajustes_idioma_actual">Idioma actual</dt>
+        <dd class="col-6 text-end" id="infoIdioma">-</dd>
+
+        <dt class="col-6" data-i18n="ajustes_tema_actual">Tema actual</dt>
+        <dd class="col-6 text-end" id="infoTema">-</dd>
+      </dl>
+    </div>
+
+    <div class="card p-4 mt-4">
+      <p class="text-muted small mb-0" data-i18n="ajustes_nota">
+        Las preferencias se guardan en este navegador. La persistencia por usuario en base de datos se agrega en la siguiente iteración.
+      </p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function cargarFormulario() {
+  const guardado = window.CentinelPrefs.get();
+  document.getElementById("selectTema").value = guardado.tema || "dark";
+  document.getElementById("selectIdioma").value = guardado.idioma || "es";
+  document.getElementById("selectZona").value = guardado.zona || "America/Argentina/Buenos_Aires";
+  actualizarInfo();
+}
+
+function actualizarInfo() {
+  const p = window.CentinelPrefs.get();
+  document.getElementById("infoTema").textContent = (p.tema === "light") ? window.CentinelPrefs.t("ajustes_tema_claro") : window.CentinelPrefs.t("ajustes_tema_oscuro");
+  document.getElementById("infoIdioma").textContent = (p.idioma === "en") ? "English" : "Español";
+  document.getElementById("infoZona").textContent = p.zona || "America/Argentina/Buenos_Aires";
+}
+
+document.getElementById("btnGuardarAjustes").addEventListener("click", () => {
+  const tema = document.getElementById("selectTema").value;
+  const idioma = document.getElementById("selectIdioma").value;
+  const zona = document.getElementById("selectZona").value;
+
+  window.CentinelPrefs.set({ tema, idioma, zona });
+  actualizarInfo();
+
+  const msg = document.getElementById("msgGuardado");
+  msg.classList.remove("d-none");
+  setTimeout(() => msg.classList.add("d-none"), 2000);
+});
+
+cargarFormulario();
+</script>
+{% endblock %}

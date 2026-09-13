@@ -1,0 +1,76 @@
+﻿{% extends "base.html" %}
+
+{% block title %}Cámaras{% endblock %}
+
+{% block content %}
+<h2 data-i18n="camaras_titulo">Cámaras</h2>
+<p class="text-muted" data-i18n="camaras_subtitulo">Vista en vivo (simulada) de las cámaras registradas.</p>
+
+<div class="row g-3" id="grid-camaras"></div>
+<div id="camara-expandida" class="d-none"></div>
+
+<script>
+let TODAS_LAS_CAMARAS = [];
+
+async function cargarCamaras() {
+  const res = await fetch("/api/camaras");
+  const camaras = await res.json();
+  TODAS_LAS_CAMARAS = camaras;
+
+  const grid = document.getElementById("grid-camaras");
+  grid.innerHTML = "";
+  camaras.forEach(c => {
+    const col = document.createElement("div");
+    col.className = "col-12 col-md-6";
+    col.id = `cam-${c.id}`;
+    col.innerHTML = `
+      <div class="card camera-card">
+        <div class="camera-frame">
+          <img src="${c.imagen_url}" alt="${c.nombre}">
+          <span class="badge ${c.estado === 'activa' ? 'bg-success' : 'bg-secondary'} camera-status">${c.estado}</span>
+        </div>
+        <div class="card-body d-flex justify-content-between align-items-center">
+          <div>
+            <div class="fw-semibold">${c.nombre}</div>
+            <small class="text-muted">${c.ubicacion}</small>
+          </div>
+          <button class="btn btn-sm btn-outline-primary" onclick="expandirCamara(${JSON.stringify(c).replace(/"/g, '&quot;')})">
+            ${window.CentinelPrefs.t('camaras_expandir')}
+          </button>
+        </div>
+      </div>`;
+    grid.appendChild(col);
+  });
+
+  // Si venimos desde "Inicio" con una cámara puntual (?cam=ID), la abrimos directo
+  const params = new URLSearchParams(window.location.search);
+  const camId = params.get("cam");
+  if (camId) {
+    const camara = camaras.find(c => String(c.id) === camId);
+    if (camara) expandirCamara(camara);
+  }
+}
+
+function expandirCamara(c) {
+  document.getElementById("grid-camaras").classList.add("d-none");
+  const cont = document.getElementById("camara-expandida");
+  cont.classList.remove("d-none");
+  cont.innerHTML = `
+    <button class="btn btn-secondary mb-3" onclick="volver()"><i class="bi bi-arrow-left"></i> ${window.CentinelPrefs.t('camaras_volver')}</button>
+    <div class="camera-frame camera-frame-expanded">
+      <img src="${c.imagen_url}" alt="${c.nombre}">
+      <span class="badge ${c.estado === 'activa' ? 'bg-success' : 'bg-secondary'} camera-status">${c.estado}</span>
+    </div>
+    <h5 class="mt-3">${c.nombre}</h5>
+    <p class="text-muted">${c.ubicacion}</p>`;
+}
+
+function volver() {
+  document.getElementById("camara-expandida").classList.add("d-none");
+  document.getElementById("grid-camaras").classList.remove("d-none");
+  history.replaceState(null, "", "/camaras");
+}
+
+cargarCamaras();
+</script>
+{% endblock %}
