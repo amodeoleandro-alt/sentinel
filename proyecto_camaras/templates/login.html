@@ -1,0 +1,40 @@
+﻿{% extends "base_auth.html" %}
+
+{% block title %}Iniciar sesión{% endblock %}
+
+{% block auth_content %}
+
+<form method="POST" class="text-start">
+  <div class="mb-3">
+    <label class="form-label small text-white-50 fw-semibold">Correo electrónico</label>
+    <input type="text" class="form-control form-control-custom" name="correo" placeholder="admin@demo.com" required>
+  </div>
+
+  <div class="mb-4">
+    <label class="form-label small text-white-50 fw-semibold">Contraseña</label>
+    <input type="password" class="form-control form-control-custom" name="password" placeholder="••••••••" required>
+  </div>
+
+  <button type="submit" class="btn btn-centinela w-100 mb-3">
+    <i class="bi bi-shield-lock-fill me-2"></i>Iniciar sesión
+  </button>
+</form>
+
+<div class="mb-3">
+  <a href="{{ url_for('auth.registro') }}" class="small text-warning text-decoration-none">Crear una cuenta</a>
+</div>
+
+<hr style="border-color: rgba(255,255,255,0.15);" class="my-3">
+
+<div class="p-3 rounded text-start" style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(234, 179, 8, 0.3);">
+  <div class="d-flex align-items-center mb-1">
+    <span class="badge bg-warning text-dark me-2" style="font-size: 0.65rem;">DEMO</span>
+    <small class="text-white-50 fw-bold" style="font-size: 0.75rem;">CREDENCIALES DE PRUEBA</small>
+  </div>
+  <div class="text-secondary small" style="font-size: 0.75rem;">
+    <div><strong class="text-light">Admin:</strong> admin@demo.com / Admin1234</div>
+    <div><strong class="text-light">Usuario:</strong> usuario@demo.com / Usuario1234</div>
+  </div>
+</div>
+
+{% endblock %}

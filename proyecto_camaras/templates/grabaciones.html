@@ -1,0 +1,88 @@
+﻿{% extends "base.html" %}
+
+{% block title %}Grabaciones{% endblock %}
+
+{% block content %}
+<h2 data-i18n="grab_titulo">Grabaciones</h2>
+<p class="text-muted" data-i18n="grab_subtitulo">Listado de grabaciones (simuladas). Se obtiene dinámicamente desde el backend.</p>
+
+<div class="card p-4 mb-4">
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <h6 class="mb-0"><i class="bi bi-hdd-fill icon-yellow me-2"></i><span data-i18n="almacenamiento_titulo">Almacenamiento</span></h6>
+    <span id="almacenamiento-texto" class="text-muted small"></span>
+  </div>
+  <div class="progress-centinela">
+    <div id="almacenamiento-barra" class="h-100" style="width:0%; transition: width 0.4s ease;"></div>
+  </div>
+  <div id="almacenamiento-alerta" class="mt-3"></div>
+</div>
+
+<div class="table-responsive">
+  <table class="table table-hover align-middle">
+    <thead>
+      <tr>
+        <th data-i18n="grab_col_fecha">Fecha</th>
+        <th data-i18n="grab_col_hora">Hora</th>
+        <th data-i18n="grab_col_camara">Cámara</th>
+        <th data-i18n="grab_col_duracion">Duración</th>
+        <th data-i18n="grab_col_accion">Acción</th>
+      </tr>
+    </thead>
+    <tbody id="tabla-grabaciones"></tbody>
+  </table>
+</div>
+
+<script>
+fetch("/api/grabaciones")
+  .then(r => r.json())
+  .then(grabaciones => {
+    const tbody = document.getElementById("tabla-grabaciones");
+    if (grabaciones.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted">${window.CentinelPrefs.t('grab_vacio')}</td></tr>`;
+      return;
+    }
+    grabaciones.forEach(g => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${g.fecha}</td>
+        <td>${g.hora}</td>
+        <td>${g.camara}</td>
+        <td>${g.duracion}</td>
+        <td><button class="btn btn-sm btn-outline-primary" onclick="alert('${window.CentinelPrefs.t('grab_ver')}: ${g.archivo} (simulado)')">${window.CentinelPrefs.t('grab_ver')}</button></td>`;
+      tbody.appendChild(tr);
+    });
+  });
+
+// --- Almacenamiento (simulado por ahora) ---
+// TODO cuando conectemos con el disco real: crear un endpoint /api/almacenamiento en Flask
+// que use shutil.disk_usage() y devuelva {usado_gb, total_gb}, y reemplazar estos valores fijos por ese fetch.
+function cargarAlmacenamiento() {
+  const usadoGB = 620;
+  const totalGB = 1000;
+  const porcentaje = Math.round((usadoGB / totalGB) * 100);
+
+  const barra = document.getElementById("almacenamiento-barra");
+  const texto = document.getElementById("almacenamiento-texto");
+  const alerta = document.getElementById("almacenamiento-alerta");
+
+  barra.style.width = porcentaje + "%";
+  texto.textContent = `${usadoGB} GB / ${totalGB} GB ${window.CentinelPrefs.t('almacenamiento_usado')} (${porcentaje}%)`;
+
+  let color = "var(--accent-blue)";
+  let alertaHTML = "";
+
+  if (porcentaje >= 85) {
+    color = "var(--accent-red)";
+    alertaHTML = `<div class="alert alert-danger mb-0 py-2 small"><i class="bi bi-exclamation-triangle-fill me-1"></i> El almacenamiento está por agotarse (${porcentaje}%). Te recomendamos liberar espacio o ampliar el plan.</div>`;
+  } else if (porcentaje >= 50) {
+    color = "var(--accent-yellow)";
+    alertaHTML = `<div class="alert alert-warning mb-0 py-2 small text-dark"><i class="bi bi-info-circle-fill me-1"></i> Ya usaste más de la mitad del espacio disponible (${porcentaje}%).</div>`;
+  }
+
+  barra.style.backgroundColor = color;
+  alerta.innerHTML = alertaHTML;
+}
+
+cargarAlmacenamiento();
+</script>
+{% endblock %}

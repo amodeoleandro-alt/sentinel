@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Perfil{% endblock %}
+{% block content %}
+<h2>Mi perfil</h2>
+<div class="card p-4" style="max-width: 500px;">
+  <dl class="row mb-0">
+    <dt class="col-5">Nombre</dt>
+    <dd class="col-7">{{ current_user.nombre }} {{ current_user.apellido }}</dd>
+
+    <dt class="col-5">Correo</dt>
+    <dd class="col-7">{{ current_user.correo }}</dd>
+
+    <dt class="col-5">Rol</dt>
+    <dd class="col-7"><span class="badge bg-primary text-capitalize">{{ current_user.rol }}</span></dd>
+
+    <dt class="col-5">Fecha de creación</dt>
+    <dd class="col-7">{{ current_user.fecha_creacion.strftime('%d/%m/%Y') if current_user.fecha_creacion else '-' }}</dd>
+
+    <dt class="col-5">Último acceso</dt>
+    <dd class="col-7">{{ current_user.ultimo_login.strftime('%d/%m/%Y %H:%M') if current_user.ultimo_login else 'Primer inicio de sesión' }}</dd>
+  </dl>
+  <button class="btn btn-outline-primary mt-3">Cambiar contraseña</button>
+</div>
+{% endblock %}
